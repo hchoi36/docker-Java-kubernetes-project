@@ -35,7 +35,7 @@ pipeline {
         stage('Docker_push') {
             steps {
                 script {
-                    docker.withRegistry( '', docker_registry ) {
+                    docker.withRegistry( 'https://registry.hub.docker.com', docker_registry ) {
                     sh 'docker push hchoi36/demo:v1'
                 }
             }
