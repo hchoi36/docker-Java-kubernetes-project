@@ -34,14 +34,12 @@ pipeline {
 
         stage('Docker_push') {
             steps {
-                script {
-                    docker.withRegistry( '', credentialsId: "docker_registry" ) {
-                    sh 'docker push hchoi36/demo:v1'
+                docker.withRegistry( '', credentialsId: "docker_registry" ) {
+                sh 'docker push hchoi36/demo:v1'
                 }
             }
         }
-        
-     }  
+     
       
     }
 }
