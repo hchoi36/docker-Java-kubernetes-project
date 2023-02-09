@@ -27,7 +27,7 @@ pipeline {
         stage('Docker_build') {
             steps {
                 dir("${WORKSPACE}/productcatalogue") {
-                sh 'docker build -t hchoi36/demo:v1'
+                sh 'docker build -t hchoi36/demo:v1 .'
                 }
             }
         }
