@@ -26,15 +26,41 @@ pipeline {
                 sh 'mvn clean install'
                 }
             }
+
+            steps {
+                dir("${WORKSPACE}/shopfront") {
+                sh 'mvn clean install'
+                }
+            }
+
+            steps {
+                dir("${WORKSPACE}/stockmanager") {
+                sh 'mvn clean install'
+                }
+            }
         }
 
         stage('Build image from Dockerfile') {
             steps {
                 dir("${WORKSPACE}/productcatalogue") {
-                sh 'docker build -t hchoi36/demo:v1 .'
+                sh 'docker build -t hchoi36/demo:pc .'
                 }
             }
+
+            steps {
+                dir("${WORKSPACE}/shopfront") {
+                sh 'docker build -t hchoi36/demo:sf .'
+                }
+            }
+            
+            steps {
+                dir("${WORKSPACE}/stockmanager") {
+                sh 'docker build -t hchoi36/demo:sm .'
+                }
+            }
+
         }
+
         
         stage('Login to Docker Hub') {
             steps {
@@ -45,7 +71,9 @@ pipeline {
         stage('Push image to registry') {
             steps {
                 //WithDockerRegistry([credentialsId: "docker_registry", url: "" ]) {
-                sh 'docker push hchoi36/demo:v1'
+                sh 'docker push hchoi36/demo:pc'
+                sh 'docker push hchoi36/demo:sf'
+                sh 'docker push hchoi36/demo:sm'
                 //}
             }
         }
