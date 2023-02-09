@@ -25,19 +25,16 @@ pipeline {
                 dir("${WORKSPACE}/productcatalogue") {
                 sh 'mvn clean install'
                 }
-            }
 
-            steps {
                 dir("${WORKSPACE}/shopfront") {
                 sh 'mvn clean install'
                 }
-            }
 
-            steps {
                 dir("${WORKSPACE}/stockmanager") {
                 sh 'mvn clean install'
                 }
             }
+
         }
 
         stage('Build image from Dockerfile') {
@@ -45,15 +42,11 @@ pipeline {
                 dir("${WORKSPACE}/productcatalogue") {
                 sh 'docker build -t hchoi36/demo:pc .'
                 }
-            }
 
-            steps {
                 dir("${WORKSPACE}/shopfront") {
                 sh 'docker build -t hchoi36/demo:sf .'
                 }
-            }
-            
-            steps {
+
                 dir("${WORKSPACE}/stockmanager") {
                 sh 'docker build -t hchoi36/demo:sm .'
                 }
