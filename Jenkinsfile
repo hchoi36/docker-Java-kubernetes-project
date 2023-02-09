@@ -6,6 +6,10 @@ pipeline {
         //label 'worker_terraform'
     }
 
+    environment {
+        DOCKERHUB_CREDENTIALS=credentials('docker_registry')
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -16,7 +20,7 @@ pipeline {
         }  
 
         
-        stage('Maven') {
+        stage('Build and package with maven') {
             steps {
                 dir("${WORKSPACE}/productcatalogue") {
                 sh 'mvn clean install'
@@ -24,19 +28,25 @@ pipeline {
             }
         }
 
-        stage('Docker_build') {
+        stage('Build image from Dockerfile') {
             steps {
                 dir("${WORKSPACE}/productcatalogue") {
                 sh 'docker build -t hchoi36/demo:v1 .'
                 }
             }
         }
-
-        stage('Docker_push') {
+        
+        stage('Login to Docker Hub') {
             steps {
-                WithDockerRegistry([credentialsId: "docker_registry", url: "" ]) {
+                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | sudo docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+            }
+        }
+
+        stage('Push image to registry') {
+            steps {
+                //WithDockerRegistry([credentialsId: "docker_registry", url: "" ]) {
                 sh 'docker push hchoi36/demo:v1'
-                }
+                //}
             }
         }
      
