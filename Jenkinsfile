@@ -34,8 +34,8 @@ pipeline {
 
         stage('Docker_push') {
             steps {
-                dir("${WORKSPACE}/productcatalogue") {
-                docker.withRegistry( '', docker_registry ) {
+                script {
+                    docker.withRegistry( '', docker_registry ) {
                     sh 'docker push hchoi36/demo:v1'
                 }
             }
