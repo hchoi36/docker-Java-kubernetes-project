@@ -70,7 +70,17 @@ pipeline {
                 //}
             }
         }
-     
+       
+       stage('Deploy images to kubernetes') {
+        steps {
+            dir("${WORKSPACE}/kubernetes") {
+                sh 'kubectl apply -f productcatalogue-service.yaml'
+                sh 'kubectl apply -f shopfront-service.yaml'
+                sh 'kubectl apply -f stockmanager-service.yaml'
+                }
+            
+            }
+       }
       
     }
    
