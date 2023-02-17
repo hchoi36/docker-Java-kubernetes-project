@@ -1,4 +1,5 @@
 def TF = "ECR"
+ dir("${WORKSPACE}/terraform/${TF}") {
 def registry_credentials = sh (
     script: "terraform output -raw container_registry_credentials",
     returnStdout: true
@@ -8,7 +9,7 @@ def container_registry_url = sh (
     script: "terraform output -raw container_registry",
     returnStdout: true
 ).trim()
-
+ }
 pipeline {
     agent {
         label 'workernode2'
