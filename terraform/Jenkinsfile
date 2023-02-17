@@ -7,11 +7,6 @@ pipeline {
     }
     tools {
         terraform 'tf_test'
-        }
-    
-    environment {
-        ECR_REGISTRY = "594244466763.dkr.ecr.region.amazonaws.com"
-        ECR_CREDENTIALS=credentials('ECR_registry')
     }
 
     stages {
@@ -55,6 +50,10 @@ pipeline {
         stage("login to registry") {
           when {
             equals(actual: "${TF}", expected: "ECR")
+          }
+          environment {
+            ECR_REGISTRY = "${aws_ecr_repository.ecr.repository_url}"
+            ECR_CREDENTIALS=credentials('ECR_registry')
           }
           steps {
             sh "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_REGISTRY"
