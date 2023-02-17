@@ -52,18 +52,18 @@ pipeline {
             equals(actual: "${TF}", expected: "ECR")
           }
           steps {
-            withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_credentials', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-                    def registry_credentials = sh (
+            def registry_credentials = sh (
                         script: "terraform output -json registry_credentials",
                         returnStdout: true,
                         cwd: "${WORKSPACE}/terraform/${TF}"
                     ).trim().readJSON()
 
-                    def container_registry_url = sh (
-                        script: "terraform output container_registry_url",
-                        returnStdout: true,
-                        cwd: "${WORKSPACE}/terraform/${TF}"
-                    ).trim()
+            def container_registry_url = sh (
+                script: "terraform output container_registry_url",
+                returnStdout: true,
+                cwd: "${WORKSPACE}/terraform/${TF}"
+            ).trim()
+            withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_credentials', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
                     //dir("${WORKSPACE}/terraform/${TF}") {
                     sh "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $container_registry_url"
                     // sh "docker build -t $container_registry_url/my-image:latest ."
