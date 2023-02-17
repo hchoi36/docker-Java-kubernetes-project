@@ -1,7 +1,7 @@
 resource "aws_instance" "ec2" {
   ami = "ami-08e637cea2f053dfa"
   instance_type = "t2.micro"
-  key_name = "devops_lab"
+  key_name = "Antra_devops"
   vpc_security_group_ids = [aws_security_group.AntraSG.id]
   subnet_id = "${element(module.vpc.public_subnets, 0)}"
 
@@ -9,12 +9,12 @@ resource "aws_instance" "ec2" {
 
   user_data = <<EOF
 		#!/bin/bash
-    sudo yum update -y
-    sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo --no-check-certificate
-    sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
-    sudo yum install jenkins -y
-    sudo systemctl start jenkins
-    sudo systemctl enable jenkins
+    yum update -y
+    wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo --no-check-certificate
+    rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+    yum install jenkins -y
+    systemctl start jenkins
+    systemctl enable jenkins
 	EOF
 
   tags = {

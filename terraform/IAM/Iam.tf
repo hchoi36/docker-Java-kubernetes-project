@@ -10,30 +10,31 @@ output "access_key" {
   value = aws_iam_access_key.ack.id 
 }
 
-resource "aws_iam_user_policy" "iam" {
-  name = "EC2"
-  user = aws_iam_user.dev
-  policy = <<EOF
-  {
-    "Version": "2022-1-6",
-    "Statement": [
-    {
-    "Effect": "Allow",
-    "Action": "ec2:*",
-    "Resource": "*"
-
-    }
-    ] 
-  }
-  EOF
+#encrypted_secret with pgp key specified can be used instead then decrypt with terraform output -raw encrypted_secret | base64 --decode | keybase pgp decrypt 
+output "secret" {
+  value = aws_iam_access_key.ack.secret 
 }
 
+resource "aws_iam_user_policy" "iam" {
+  name = "EC2"
+  user = aws_iam_user.dev.name
+  policy = jsonencode(
+  {
+    Version: "2012-10-17",
+    Statement: [
+    {
+      Effect: "Allow",
+      Action: ["ec2:*",]
+      Resource: "*"
+    },
+    ]
+  }
+  )
+}
 
 # resource "aws_iam_role" "test_role" {
 #   name = "test_role"
 
-#   # Terraform's "jsonencode" function converts a
-#   # Terraform expression result to valid JSON syntax.
 #   assume_role_policy = jsonencode({
 #     Version = "2012-10-17"
 #     Statement = [
@@ -42,7 +43,8 @@ resource "aws_iam_user_policy" "iam" {
 #         Effect = "Allow"
 #         Sid    = ""
 #         Principal = {
-#           Service = "ec2.amazonaws.com"
+#           #Service = "ec2.amazonaws.com"
+#           AWS: "aws_iam_user.dev.arn"
 #         }
 #       },
 #     ]
