@@ -57,12 +57,10 @@ pipeline {
             equals(actual: "${TF}", expected: "ECR")
           }
           steps {
-                    sh "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_REGISTRY"
-                    // sh "docker build -t $container_registry_url/my-image:latest ."
-                    // sh "docker push $container_registry_url/my-image:latest"
-                    }
+            sh "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_REGISTRY"
+            // sh "docker build -t $container_registry_url/my-image:latest ."
+            // sh "docker push $container_registry_url/my-image:latest"
             }
-          }
         }
       
         stage("Option to destroy all resources created") {
