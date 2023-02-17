@@ -56,7 +56,7 @@ pipeline {
                     def registry_credentials = sh (
                       script: "terraform output -raw container_registry_credentials",
                       returnStdout: true
-                      cwd: "${${WORKSPACE}/terraform/${TF}}"
+                      cwd: "${WORKSPACE}/terraform/${TF}"
                       ).trim().readJSON()
 
                     def container_registry_url = sh (
