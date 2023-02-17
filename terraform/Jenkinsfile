@@ -64,11 +64,11 @@ pipeline {
                       returnStdout: true
                       cwd: "${${WORKSPACE}/terraform/${TF}}"
                       ).trim()
-                    dir("${WORKSPACE}/terraform/${TF}") {
+                    //dir("${WORKSPACE}/terraform/${TF}") {
                     sh "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $container_registry_url"
                     // sh "docker build -t $container_registry_url/my-image:latest ."
                     // sh "docker push $container_registry_url/my-image:latest"
-                    }
+                    //}
             }
           }
         }
