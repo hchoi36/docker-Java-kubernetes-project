@@ -10,7 +10,7 @@ resource "aws_ecr_repository" "ecr" {
 # data "aws_ecr_authorization_token" "token"{
 # }
 
-output "url" {
+output "container_registry" {
   value = aws_ecr_repository.ecr.repository_url
 }
 
