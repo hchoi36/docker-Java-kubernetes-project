@@ -57,9 +57,7 @@ pipeline {
             equals(actual: "${TF}", expected: "ECR")
           }
           steps {
-            withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_credentials', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-                    dir("${WORKSPACE}/terraform/${TF}") {
-                    sh sh "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_REGISTRY"
+                    sh "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_REGISTRY"
                     // sh "docker build -t $container_registry_url/my-image:latest ."
                     // sh "docker push $container_registry_url/my-image:latest"
                     }
