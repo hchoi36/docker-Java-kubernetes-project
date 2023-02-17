@@ -1,4 +1,13 @@
 def TF = "ECR"
+def registry_credentials = sh (
+    script: "terraform output -raw container_registry_credentials",
+    returnStdout: true
+).trim().readJSON()
+
+def container_registry_url = sh (
+    script: "terraform output -raw container_registry",
+    returnStdout: true
+).trim()
 
 pipeline {
     agent {
@@ -47,25 +56,16 @@ pipeline {
           }
         }
 
-        stage("Output ecr credentials") {
+        stage("login to registry") {
           when {
             equals(actual: "${TF}", expected: "ECR")
           }
           steps {
             withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_credentials', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
                     dir("${WORKSPACE}/terraform/${TF}") {
-                    // sh 'url=$(terraform output -raw url)'
-                    // sh 'id=$(terraform output -raw id)'
-                    // sh 'pass=$(terraform output -raw password)'
-                    // sh 'echo $url'
-                    // sh 'echo $id'
-                    // sh 'echo $pass'
-                    sh 'terraform output -raw url > url.txt'
-                    sh 'terraform output -raw id > id.txt'
-                    sh 'terraform output -raw password > pass.txt'
-                    sh 'cat url.txt'
-                    sh 'cat id.txt'
-                    sh 'cat pass.txt' 
+                    sh "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $container_registry_url"
+                    // sh "docker build -t $container_registry_url/my-image:latest ."
+                    // sh "docker push $container_registry_url/my-image:latest"
                     }
             }
           }
