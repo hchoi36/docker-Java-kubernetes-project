@@ -1,0 +1,150 @@
+def TF = "ECR"
+
+pipeline {
+    agent {
+        label 'workernode2'
+        //label 'worker_terraform'
+    }
+    tools {
+        terraform 'tf_test'
+        }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Get some code from a GitHub repository
+                checkout([$class: 'GitSCM', branches: [[name: '*/AD-6']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/xiaotinglian/cloud-native-microservice-strangler.git']]])
+        
+            }
+        }  
+
+        
+        stage('Initialize terrafrom backend') {
+            steps {
+                dir("${WORKSPACE}/terraform/${TF}") {
+                sh 'terraform init'
+                }
+            }
+        }
+        
+        stage("terraform plan to see results before applying") {
+          steps {
+            withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_credentials', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+                    dir("${WORKSPACE}/terraform/${TF}") {
+                    sh 'terraform plan'
+                    }
+            }
+          }
+        }
+        
+        stage("Create the resources") {
+          steps {
+            withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_credentials', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+                    dir("${WORKSPACE}/terraform/${TF}") {
+                    sh 'terraform apply --auto-approve'
+                    }
+            }
+          }
+        }
+
+        stage('Build and package with maven') {
+            steps {
+                dir("${WORKSPACE}/productcatalogue") {
+                sh 'mvn clean install'
+                }
+
+                dir("${WORKSPACE}/shopfront") {
+                sh 'mvn clean install'
+                }
+
+                dir("${WORKSPACE}/stockmanager") {
+                sh 'mvn clean install'
+                }
+            }
+
+        }
+
+        stage('Build image from Dockerfile') {
+            steps {
+                dir("${WORKSPACE}/productcatalogue") {
+                sh 'docker build -t hchoi36/demo:pc .'
+                }
+
+                dir("${WORKSPACE}/shopfront") {
+                sh 'docker build -t hchoi36/demo:sf .'
+                }
+
+                dir("${WORKSPACE}/stockmanager") {
+                sh 'docker build -t hchoi36/demo:sm .'
+                }
+            }
+
+        }
+        
+
+         stage("Login to registry") {
+          when {
+            equals(actual: "${TF}", expected: "ECR")
+          }
+          steps {
+            withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_credentials', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+                    dir("${WORKSPACE}/terraform/${TF}") {
+                    // sh 'url=$(terraform output -raw url)'
+                    // sh 'id=$(terraform output -raw id)'
+                    // sh 'pass=$(terraform output -raw password)'
+                    // sh 'echo $url'
+                    // sh 'echo $id'
+                    // sh 'echo $pass'
+                    sh 'terraform output -raw url > url.txt'
+                    sh 'terraform output -raw id > id.txt'
+                    sh 'terraform output -raw password > pass.txt'
+                    sh 'cat url.txt'
+                    sh 'cat id.txt'
+                    sh 'cat pass.txt'
+                    sh 'echo terraform output -raw password  | docker login terraform output -raw url -u terraform output -raw id --password-stdin'
+                    }
+            }
+          }
+        }
+        
+        stage('Login to registry') {
+            steps {
+                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+            }
+        }
+
+        stage('Push image to registry') {
+            steps {
+                //WithDockerRegistry([credentialsId: "docker_registry", url: "" ]) {
+                sh 'docker push hchoi36/demo:pc'
+                sh 'docker push hchoi36/demo:sf'
+                sh 'docker push hchoi36/demo:sm'
+                //}
+            }
+        }
+      
+        stage("Option to destroy all resources created") {
+          input {
+            message "Ready to destroy?"
+            ok "Yes"
+          }
+          
+          steps {
+            withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_credentials', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+                    dir("${WORKSPACE}/terraform/${TF}") {
+                    sh 'terraform destroy --auto-approve'
+                    }
+            }
+          }
+        }
+      
+    }
+
+post{
+    always {  
+      sh 'docker logout'           
+    }      
+  }
+
+}
+          
