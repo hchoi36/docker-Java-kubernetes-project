@@ -56,7 +56,7 @@ pipeline {
             ECR_CREDENTIALS=credentials('ECR_registry')
           }
           steps {
-            sh "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_REGISTRY"
+            sh "echo $(data.aws_ecr_authorization_token.token.password) | $docker login --username AWS --password-stdin $(aws_ecr_repository.ecr.repository_url)"
             // sh "docker build -t $container_registry_url/my-image:latest ."
             // sh "docker push $container_registry_url/my-image:latest"
             }
